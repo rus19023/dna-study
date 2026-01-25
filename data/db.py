@@ -1,4 +1,4 @@
-# data/db.py
+# db.py
 
 from pymongo import MongoClient
 import streamlit as st
@@ -19,3 +19,4 @@ decks = db.decks
 users = db.users
 sessions = db.sessions
 progress = db.progress
+study_sessions = db.study_sessions  # Track individual study sessions for anti-cheat

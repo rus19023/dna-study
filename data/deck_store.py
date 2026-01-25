@@ -39,3 +39,60 @@ def add_card(deck_name, question, answer):
         upsert=True
     )
     
+
+def find_duplicate_cards(deck_name):
+    """Find duplicate cards in a deck (same question)"""
+    doc = decks.find_one({"_id": deck_name})
+    if not doc or "cards" not in doc:
+        return []
+    
+    cards = doc["cards"]
+    seen = {}
+    duplicates = []
+    
+    for idx, card in enumerate(cards):
+        question = card["question"].strip().lower()
+        if question in seen:
+            duplicates.append({
+                "index": idx,
+                "question": card["question"],
+                "answer": card["answer"],
+                "original_index": seen[question]
+            })
+        else:
+            seen[question] = idx
+    
+    return duplicates
+
+
+def delete_card(deck_name, card_index):
+    """Delete a card from a deck by index"""
+    doc = decks.find_one({"_id": deck_name})
+    if not doc or "cards" not in doc:
+        return False
+    
+    cards = doc["cards"]
+    if 0 <= card_index < len(cards):
+        cards.pop(card_index)
+        decks.update_one(
+            {"_id": deck_name},
+            {"$set": {"cards": cards}}
+        )
+        return True
+    return False
+
+
+def get_all_cards_with_indices(deck_name):
+    """Get all cards with their indices for management"""
+    doc = decks.find_one({"_id": deck_name})
+    if not doc or "cards" not in doc:
+        return []
+    
+    return [
+        {
+            "index": idx,
+            "question": card["question"],
+            "answer": card["answer"]
+        }
+        for idx, card in enumerate(doc["cards"])
+    ]
