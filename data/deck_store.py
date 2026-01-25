@@ -1,6 +1,8 @@
+# deck_store.py
 from data.db import decks
 
-## run once to sync in-memory decks to database
+# # run once to sync in-memory decks to database
+
 
 # from data.decks import DECKS
 
@@ -11,8 +13,7 @@ from data.db import decks
 #         upsert=True
 #     )
 
-## end run once block
-
+# # end run once block
 
 
 def get_deck_names():

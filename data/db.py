@@ -1,8 +1,21 @@
+# data/db.py
+
 from pymongo import MongoClient
+import streamlit as st
 
-MONGO_URI = "mongodb://localhost:27017"
-DB_NAME = "flashcards"
+# Read from Streamlit secrets
+MONGO_URI = st.secrets["mongo"]["uri"]
+DB_NAME = st.secrets["mongo"]["db_name"]
 
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+# Use caching to avoid reconnecting on every Streamlit rerun
+@st.cache_resource
+def get_database():
+    client = MongoClient(MONGO_URI)
+    return client[DB_NAME]
+
+
+db = get_database()
 decks = db.decks
+users = db.users
+sessions = db.sessions
+progress = db.progress
