@@ -15,3 +15,4 @@ def calculate_points(correct):
         return BASE_POINTS + (streak * STREAK_BONUS)
     else:
         return WRONG_PENALTY
+    
