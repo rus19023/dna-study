@@ -167,15 +167,16 @@ def _record_answer(card, deck_name, username, study_mode, correct):
 
 def _next_card():
     """Move to next card and reset state"""
-    st.session_state.index = (st.session_state.index + 1) % len(st.session_state.cards)
+    st.session_state.index = (st.session_state.index + 1) % len(
+        st.session_state.cards)
     st.session_state.show_answer = False
     st.session_state.card_start_time = time.time()
     st.session_state.committed_answer = None
-    
     from core.study_modes import get_mode_config, STUDY_MODES
     mode_key = st.session_state.get("study_mode", "flashcard")
     mode_config = get_mode_config(mode_key)
-    st.session_state.is_verification = random.random() < mode_config["verification_rate"]
+    st.session_state.is_verification = random.random() < mode_config[
+        "verification_rate"]
     
     if "quiz_result" in st.session_state:
         del st.session_state.quiz_result

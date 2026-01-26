@@ -95,36 +95,36 @@ def get_suspicious_users():
     for user in users.find():
         username = user["_id"]
         
-        # Check 1: Too high accuracy (>95% with 50+ cards)
+        # Check 1: ONLY flag if 100% accuracy (literally perfect) with many cards
         total = user.get("cards_studied", 0)
-        if total >= 50:
+        if total >= 100:  # Increased threshold
             accuracy = (user.get("correct_answers", 0) / total * 100) if total > 0 else 0
-            if accuracy > 95:
+            if accuracy >= 99.5:  # Changed to 99.5% (almost perfect)
                 suspicious.append({
                     "username": username,
-                    "reason": f"Unusually high accuracy: {accuracy:.1f}%",
+                    "reason": f"Suspiciously perfect accuracy: {accuracy:.1f}% over {total} cards",
                     "severity": "medium"
                 })
         
-        # Check 2: Failed verification checks
+        # Check 2: Failed verification checks (this is the real cheater detector)
         verif_total = user.get("verification_passed", 0) + user.get("verification_failed", 0)
         if verif_total >= 10:
             verif_accuracy = (user.get("verification_passed", 0) / verif_total * 100)
-            if verif_accuracy < 50:
+            if verif_accuracy < 50:  # Failing verifications = likely cheating
                 suspicious.append({
                     "username": username,
-                    "reason": f"Low verification accuracy: {verif_accuracy:.1f}%",
+                    "reason": f"Low verification accuracy: {verif_accuracy:.1f}% (likely clicking 'Got it' without knowing)",
                     "severity": "high"
                 })
         
-        # Check 3: Too fast response times (average < 2 seconds)
+        # Check 3: Impossible speed (average < 1 second = likely auto-clicking)
         recent_sessions = list(study_sessions.find({"username": username}).limit(50))
         if len(recent_sessions) >= 20:
             avg_time = sum(s.get("response_time", 0) for s in recent_sessions) / len(recent_sessions)
-            if avg_time < 2:
+            if avg_time < 1:  # Changed to 1 second
                 suspicious.append({
                     "username": username,
-                    "reason": f"Suspiciously fast responses: {avg_time:.1f}s average",
+                    "reason": f"Impossibly fast responses: {avg_time:.1f}s average",
                     "severity": "high"
                 })
     

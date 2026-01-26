@@ -9,7 +9,25 @@ STUDY_MODES = {
         "requires_typing": False,
         "requires_commit": False,
         "min_delay": 0,
-        "verification_rate": 0.1  # 10% verification
+        "verification_rate": 0.1
+    },
+    "multiple_choice": {
+        "name": "🎯 Multiple Choice",
+        "description": "Choose the correct answer from 4 options",
+        "requires_typing": False,
+        "requires_commit": False,
+        "min_delay": 0,
+        "verification_rate": 0,
+        "is_game_mode": True
+    },
+    "true_false": {
+        "name": "✓✗ True/False",
+        "description": "Determine if the statement is true or false",
+        "requires_typing": False,
+        "requires_commit": False,
+        "min_delay": 0,
+        "verification_rate": 0,
+        "is_game_mode": True
     },
     "quiz": {
         "name": "✍️ Quiz Mode",
@@ -24,8 +42,8 @@ STUDY_MODES = {
         "description": "Commit before revealing answer",
         "requires_typing": False,
         "requires_commit": True,
-        "min_delay": 3,  # 3 second delay
-        "verification_rate": 0.2  # 20% verification
+        "min_delay": 3,
+        "verification_rate": 0.2
     },
     "hardcore": {
         "name": "🔥 Hardcore Mode",
@@ -33,7 +51,7 @@ STUDY_MODES = {
         "requires_typing": True,
         "requires_commit": True,
         "min_delay": 5,
-        "verification_rate": 0.3  # 30% verification
+        "verification_rate": 0.3
     }
 }
 
