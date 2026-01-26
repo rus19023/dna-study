@@ -1,6 +1,7 @@
 # ui/components.py
 
 import streamlit as st
+import time
 from core.flashcard_logic import flip_card, next_card
 
 
@@ -32,13 +33,45 @@ def controls():
         st.button("➡️ Next", key="next_btn", on_click=next_card, use_container_width=True)
 
 
-def answer_buttons(on_correct, on_incorrect):
+def answer_buttons(on_correct, on_incorrect, disabled=False):
     """Show Got it / Need practice buttons after flipping"""
     col1, col2 = st.columns(2)
     with col1:
-        st.button("✓ Got it!", key="correct_btn", on_click=on_correct, use_container_width=True, type="primary")
+        st.button("✓ Got it!", key="correct_btn", on_click=on_correct, use_container_width=True, type="primary", disabled=disabled)
     with col2:
-        st.button("✗ Need practice", key="incorrect_btn", on_click=on_incorrect, use_container_width=True)
+        st.button("✗ Need practice", key="incorrect_btn", on_click=on_incorrect, use_container_width=True, disabled=disabled)
+
+
+def commit_buttons(on_know, on_dont_know):
+    """Commit before revealing answer"""
+    col1, col2 = st.columns(2)
+    with col1:
+        st.button("✓ I know this", key="know_btn", on_click=on_know, use_container_width=True, type="primary")
+    with col2:
+        st.button("✗ I don't know", key="dont_know_btn", on_click=on_dont_know, use_container_width=True)
+
+
+def quiz_input(on_submit):
+    """Quiz mode answer input"""
+    with st.form("quiz_answer_form", clear_on_submit=True):
+        user_answer = st.text_input("Your answer:", key="quiz_input")
+        submitted = st.form_submit_button("Submit Answer", use_container_width=True, type="primary")
+        
+        if submitted:
+            on_submit(user_answer)
+
+
+def timer_display(start_time, min_delay):
+    """Display countdown timer"""
+    elapsed = time.time() - start_time
+    remaining = max(0, min_delay - elapsed)
+    
+    if remaining > 0:
+        st.warning(f"⏳ Please wait {remaining:.1f} seconds before answering...")
+        return False
+    else:
+        st.success("✅ You can answer now")
+        return True
 
 
 def user_stats(user_data):
@@ -56,12 +89,66 @@ def user_stats(user_data):
         st.metric("Accuracy", f"{accuracy:.1f}%")
     with col4:
         st.metric("Current Streak", user_data["current_streak"])
+    
+    # Verification stats if available
+    verif_total = user_data.get("verification_passed", 0) + user_data.get("verification_failed", 0)
+    if verif_total > 0:
+        verif_accuracy = (user_data.get("verification_passed", 0) / verif_total * 100)
+        st.caption(f"Verification Accuracy: {verif_accuracy:.1f}% ({user_data.get('verification_passed', 0)}/{verif_total})")
 
 
 def leaderboard(users_list):
-    """Display leaderboard"""
+    """Display leaderboard with detailed stats in table format"""
     st.subheader("🏆 Leaderboard")
     
+    if not users_list:
+        st.info("No users yet. Be the first to study!")
+        return
+    
+    # Prepare data for table
+    leaderboard_data = []
     for idx, user in enumerate(users_list, 1):
-        medal = "🥇" if idx == 1 else "🥈" if idx == 2 else "🥉" if idx == 3 else f"{idx}."
-        st.write(f"{medal} **{user['_id']}** - {user['total_score']} points")
+        medal = "🥇" if idx == 1 else "🥈" if idx == 2 else "🥉" if idx == 3 else str(idx)
+        total = user.get("cards_studied", 0)
+        accuracy = (user.get("correct_answers", 0) / total * 100) if total > 0 else 0
+        
+        verif_total = user.get("verification_passed", 0) + user.get("verification_failed", 0)
+        verif_accuracy = (user.get("verification_passed", 0) / verif_total * 100) if verif_total > 0 else 0
+        
+        leaderboard_data.append({
+            "Rank": medal,
+            "Username": user['_id'],
+            "Score": user.get("total_score", 0),
+            "Cards": total,
+            "Accuracy": f"{accuracy:.1f}%",
+            "Streak": user.get("current_streak", 0),
+            "Best Streak": user.get("best_streak", 0),
+            "Verified": f"{verif_accuracy:.0f}%" if verif_total > 0 else "N/A"
+        })
+    
+    # Display as dataframe
+    import pandas as pd
+    df = pd.DataFrame(leaderboard_data)
+    st.dataframe(df, use_container_width=True, hide_index=True)
+
+
+def mode_selector():
+    """Study mode selector"""
+    from core.study_modes import STUDY_MODES
+    
+    st.sidebar.subheader("Study Mode")
+    
+    mode_options = {key: config["name"] for key, config in STUDY_MODES.items()}
+    
+    selected_mode = st.sidebar.selectbox(
+        "Select mode:",
+        options=list(mode_options.keys()),
+        format_func=lambda x: mode_options[x],
+        key="study_mode"
+    )
+    
+    # Show mode description
+    mode_config = STUDY_MODES[selected_mode]
+    st.sidebar.caption(mode_config["description"])
+    
+    return selected_mode

@@ -13,7 +13,6 @@ def get_database():
     client = MongoClient(MONGO_URI)
     return client[DB_NAME]
 
-
 db = get_database()
 decks = db.decks
 users = db.users
