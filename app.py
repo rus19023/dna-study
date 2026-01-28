@@ -1,32 +1,31 @@
-# app.py - TEMPORARY DEBUG VERSION
 import streamlit as st
 
-st.set_page_config(
-    page_title="Flashcard Study",
-    page_icon="🧬",
-)
-
-st.title("Debug Test")
-st.write("Step 1: Basic streamlit works")
-
 try:
-    from data.db import users
-    st.success("Step 2: MongoDB connection works")
-    count = users.count_documents({})
-    st.write(f"Found {count} users")
+    st.set_page_config(
+        page_title="Debug Test",
+        page_icon="🧬",
+    )
+    
+    st.title("Test 1: Streamlit works!")
+    st.write("If you see this, basic Streamlit is working.")
+    
+    # Test MongoDB secrets
+    st.write("Test 2: Checking secrets...")
+    if "mongo" in st.secrets:
+        st.success("✓ MongoDB secrets found")
+        st.write(f"URI starts with: {st.secrets['mongo']['uri'][:20]}...")
+    else:
+        st.error("✗ MongoDB secrets missing!")
+    
+    # Test MongoDB connection
+    st.write("Test 3: Connecting to MongoDB...")
+    from pymongo import MongoClient
+    client = MongoClient(st.secrets["mongo"]["uri"])
+    db = client[st.secrets["mongo"]["db_name"]]
+    count = db.users.count_documents({})
+    st.success(f"✓ MongoDB connected! Found {count} users")
+    
 except Exception as e:
-    st.error(f"MongoDB error: {e}")
-
-try:
-    from ui.auth import handle_authentication
-    st.success("Step 3: Auth import works")
-except Exception as e:
-    st.error(f"Auth import error: {e}")
-
-try:
-    from ui.study_tab import render_study_tab
-    st.success("Step 4: Study tab import works")
-except Exception as e:
-    st.error(f"Study tab import error: {e}")
-
-st.write("If you see this, check which steps failed above!")
+    import traceback
+    st.error("CRASH ERROR:")
+    st.code(traceback.format_exc())
