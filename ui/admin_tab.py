@@ -26,8 +26,7 @@ def render_admin_tab():
                 
                 st.write(f"**Total Score:** {user.get('total_score', 0)}")
                 st.write(f"**Cards Studied:** {user.get('cards_studied', 0)}")
-                st.write(f"**Accuracy:** {(user.get('correct_answers', 0) / 
-                         user.get('cards_studied', 1) * 100):.1f}%")
+                st.write(f"**Accuracy:** {(user.get('correct_answers', 0) / user.get('cards_studied', 1) * 100):.1f}%")
                 
                 col1, col2, col3 = st.columns(3)
                 with col1:
